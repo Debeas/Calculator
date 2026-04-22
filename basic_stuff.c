@@ -34,7 +34,7 @@ HWND CreateEdit(HINSTANCE hInstance, HWND hwndParent, int x, int y, int width, i
     );
     return hwndEdit;
 }
-HWND CreateStatic(HINSTANCE hInstance, HWND hwndParent, int x, int y, int width, int height, LPSTR str_Prompt/* , UINT ID_STATIC */) {
+HWND CreateStatic(HINSTANCE hInstance, HWND hwndParent, int x, int y, int width, int height, LPSTR str_Prompt, UINT ID_STATIC) {
     SET_WIDTH
     HWND hwndStatic = CreateWindowEx(
         WS_EX_CLIENTEDGE,                      // Extended styles (usually 0)
@@ -44,7 +44,7 @@ HWND CreateStatic(HINSTANCE hInstance, HWND hwndParent, int x, int y, int width,
         x, y,                   // Position relative to parent
         width, height,          // Size
         hwndParent,             // Parent window
-        /* (HMENU)(INT_PTR)ID_STATIC */ NULL,       // Edit ID (used in WM_COMMAND)
+        (HMENU)(INT_PTR)ID_STATIC /* NULL */,       // Edit ID (used in WM_COMMAND)
         hInstance,              // Module instance
         NULL                    // Extra params (usually NULL)
     );

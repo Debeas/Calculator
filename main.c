@@ -1,5 +1,5 @@
 #include <windows.h>
-#include "calculator_state.h"
+#include "calculator_parse.h"
 #include "basic_stuff.h"
 
 #define GENERATE_MAZE 1999
@@ -8,33 +8,34 @@
 #define MAZE_OFFSET_X 10
 #define MAZE_OFFSET_Y 10
 
-#define BUTTON_0 0x2000
-#define BUTTON_1 0x2001
-#define BUTTON_2 0x2002
-#define BUTTON_3 0x2003
-#define BUTTON_4 0x2004
-#define BUTTON_5 0x2005
-#define BUTTON_6 0x2006
-#define BUTTON_7 0x2007
-#define BUTTON_8 0x2008
-#define BUTTON_9 0x2009
-#define BUTTON_PLUS     0x2010
-#define BUTTON_MINUS    0x2011
-#define BUTTON_SLASH    0x2012
-#define BUTTON_ASTERIX  0x2013
-#define BUTTON_CALCULATE  0x2014
+#define BUTTON_0            0x2000
+#define BUTTON_1            0x2001
+#define BUTTON_2            0x2002
+#define BUTTON_3            0x2003
+#define BUTTON_4            0x2004
+#define BUTTON_5            0x2005
+#define BUTTON_6            0x2006
+#define BUTTON_7            0x2007
+#define BUTTON_8            0x2008
+#define BUTTON_9            0x2009
+#define BUTTON_PLUS         0x2010
+#define BUTTON_MINUS        0x2011
+#define BUTTON_SLASH        0x2012
+#define BUTTON_ASTERIX      0x2013
+#define BUTTON_CALCULATE    0x2014
 
-#define EDIT_CALCULATOR  0x2015
+#define STATIC_CALCULATOR   0x2015
 
 
 
 #define SET_WIDTH width = max(width, (int)(lstrlen(str_Prompt) * 8));
-HWND CreateButton(HINSTANCE hInstance, HWND hwndParent, int x, int y, int width, int height, LPSTR str_Prompt, UINT ID_BUTTON);
+// HWND CreateButton(HINSTANCE hInstance, HWND hwndParent, int x, int y, int width, int height, LPSTR str_Prompt, UINT ID_BUTTON);
 
 // static map_t* Main_m = NULL;
 static calculator_state_t* main_cs = NULL;
-static parser_state_t* main_ps = NULL;
-static HWND main_edit = NULL;
+// static parser_state_t* main_ps = NULL;
+// static char* calculator_string = NULL;
+static HWND main_static = NULL;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 void make_console();
@@ -85,8 +86,9 @@ int WINAPI WinMain(
         return 1;
     }
 
+    // calculator_string = malloc(101);
     main_cs = calculator_state_create();
-    main_ps = parser_state_create();
+    // main_ps = parser_state_create();
 
     int x = 30;
     int y = 40;
@@ -110,7 +112,7 @@ int WINAPI WinMain(
 
     int edit_x = 30;
     int edit_y = 10;
-    main_edit = CreateEdit(hInstance, hwnd, edit_x, edit_y, 4.75*x_width, y_height, "0", EDIT_CALCULATOR, 0);
+    main_static = CreateStatic(hInstance, hwnd, edit_x, edit_y, 4.75*x_width, y_height, "0", STATIC_CALCULATOR);
 
     ShowWindow(hwnd, nCmdShow);
     UpdateWindow(hwnd);
@@ -136,7 +138,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             // if (Main_m != NULL)
             //     map_paint(hdc, Main_m, MAZE_OFFSET_X, MAZE_OFFSET_Y + 40); /* offset down past button */
-            // SetWindowText(main_edit, main_cs->text);
+            SetWindowText(main_static, main_cs->str);
             // printf("%s\n", main_cs->text);
             EndPaint(hwnd, &ps);
             return 0;
@@ -189,7 +191,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     InvalidateRect(hwnd, NULL, TRUE);
                     break;
                 case BUTTON_MINUS:
-                    calculator_button_character(main_cs, '+');
+                    calculator_button_character(main_cs, '-');
                     InvalidateRect(hwnd, NULL, TRUE);
                     break;
                 case BUTTON_SLASH:
@@ -202,8 +204,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     break;
                 case BUTTON_CALCULATE:
                     printf("Calculate Stub\n");
-                    parser(main_cs, main_ps);
-                    
+                    double value = calculate(main_cs->str);
+                    printf("Value %.2lf\n", value);
+                    snprintf(main_cs->str, main_cs->len, "%.2lf", value);
                     InvalidateRect(hwnd, NULL, TRUE);
                     break;
                 default:
