@@ -4,8 +4,19 @@
 
 #include "calculator_parse.h"
 
+/**
+ * Change from Calculator parse 1 is that we generalize the load function such 
+ * that it searches for the highest grammar structure then operates it. This 
+ * function will be called load then each of the functions will be called 
+ * operate. Using Left Recursion. 
+ */
+
 #define MAX_LOOP 100
 
+/**
+ * Calculate is following bidmas but it needs and is folliowing parsing via 
+ * recursion. 
+ */
 double calculate(char* text) {
     printf("Begin Calculate\n");
 
@@ -16,7 +27,14 @@ double calculate(char* text) {
     return load_as(text, len);
 }
 
-double  load_number(char* text, int len) {
+/**
+ * Searches for the highest order thing then 
+ */
+double load(char* text, int len) {
+
+}
+
+double load_number(char* text, int len) {
 
     // variables
     int i = 0;
@@ -109,6 +127,83 @@ double load_as(char* text, int len) {
     // loop
     while (text[i] != '\0' && i < len) {
         if (text[i] == '+' || text[i] == '-') {
+            // Recurse
+            end_i = i;
+            hold_num = load_dm(text + start_i, end_i - start_i);
+            
+            // Operation
+            if (no_op != 0) {
+                if (last_op == '+') {
+                    out_num += hold_num;
+                } else if (last_op == '-') {
+                    out_num -= hold_num;
+                }
+            } else {
+                out_num = hold_num;
+            }
+            
+            // Iterate
+            last_op = text[i];
+            no_op++;
+            start_i = i + 1;
+            end_i = len;
+        } 
+        if ('0' <= text[i] && text[i] <= '9') {
+            last_char_num = (1==1);
+        } else {
+            last_char_num = (0==1);
+        }
+        i++;
+    }
+    
+    // Final Load
+    hold_num = load_dm(text + start_i, end_i - start_i);
+    
+    // Operation
+    if (no_op != 0) {
+        if (last_op == '+') {
+            out_num += hold_num;
+        } else if (last_op == '-') {
+            out_num -= hold_num;
+        }
+    } else {
+        out_num = hold_num;
+    }
+    
+    return out_num;
+}
+
+/**
+ * Does the bracket of bidmas, needs to check for different levels of brackets
+ * unsolved problem. 
+ */
+double load_b(char* text, int len) {
+    // index
+    int i = 0;
+    int start_i = 0;
+    int end_i = len;
+    
+    // num
+    double hold_num = 0;
+    double out_num = 1;
+    
+    // operation
+    int last_op = 0;
+    int no_op = 0;
+    int last_char_num = 0==1;
+    int level = 0;
+
+    // loop
+    while (text[i] != '\0' && i < len) {
+        if (text[i] == '(' || text[i] == ')') {
+            
+            // Highest level only
+            if (text[i] == '(') {
+                level++;
+            } else if (text[i] == ')') {
+                level--;
+            }
+            
             // Recurse
             end_i = i;
             hold_num = load_dm(text + start_i, end_i - start_i);

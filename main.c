@@ -23,6 +23,8 @@
 #define BUTTON_SLASH        0x2012
 #define BUTTON_ASTERIX      0x2013
 #define BUTTON_CALCULATE    0x2014
+#define BUTTON_OPEN_BRACKET    0x2016
+#define BUTTON_CLOSE_BRACKET    0x2017
 
 #define STATIC_CALCULATOR   0x2015
 
@@ -65,7 +67,7 @@ int WINAPI WinMain(
     }
 
     /* Window sized to fit the maze exactly plus a small margin */
-    int win_width  = 320; /* +100 for button area */
+    int win_width  = 375; /* +100 for button area */
     int win_height = 250;  /* +60  for button area */
 
     HWND hwnd = CreateWindowEx(
@@ -108,6 +110,8 @@ int WINAPI WinMain(
     CreateButton(hInstance, hwnd, x+3*1.25*x_width, y + 1.25*y_height,  x_width, y_height, "-",             BUTTON_MINUS);
     CreateButton(hInstance, hwnd, x+3*1.25*x_width, y +2*1.25*y_height, x_width, y_height, "*",             BUTTON_ASTERIX);
     CreateButton(hInstance, hwnd, x+3*1.25*x_width, y +3*1.25*y_height, x_width, y_height, "/",             BUTTON_SLASH);
+    CreateButton(hInstance, hwnd, x+4*1.25*x_width, y , x_width, y_height, "(",             BUTTON_OPEN_BRACKET);
+    CreateButton(hInstance, hwnd, x+4*1.25*x_width, y +1*1.25*y_height, x_width, y_height, ")",             BUTTON_CLOSE_BRACKET);
     CreateButton(hInstance, hwnd, x, y +4*1.25*y_height, 4.75*x_width, y_height,           "CALCULATE",     BUTTON_CALCULATE);
 
     int edit_x = 30;
@@ -200,6 +204,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     break;
                 case BUTTON_ASTERIX:
                     calculator_button_character(main_cs, '*');
+                    InvalidateRect(hwnd, NULL, TRUE);
+                    break;
+                case BUTTON_OPEN_BRACKET:
+                    calculator_button_character(main_cs, '(');
+                    InvalidateRect(hwnd, NULL, TRUE);
+                    break;
+                case BUTTON_CLOSE_BRACKET:
+                    calculator_button_character(main_cs, ')');
                     InvalidateRect(hwnd, NULL, TRUE);
                     break;
                 case BUTTON_CALCULATE:
