@@ -9,28 +9,149 @@
  * that it searches for the highest grammar structure then operates it. This 
  * function will be called load then each of the functions will be called 
  * operate. Using Left Recursion. 
+ * 
+ * Parser plan is to have operations that call each other recursively 
  */
 
 #define MAX_LOOP 100
+
+double load(char* text, int len);
+
+double op_division(char* text_1, int len_1, char* text_2, int len_2);
+double op_multiplication(char* text_1, int len_1, char* text_2, int len_2);
+double op_addition(char* text_1, int len_1, char* text_2, int len_2);
+double op_subtraction(char* text_1, int len_1, char* text_2, int len_2);
+double op_brackets(char* text, int len);
+double op_number(char* text, int len);
+
+static int load_level = 0;
 
 /**
  * Calculate is following bidmas but it needs and is folliowing parsing via 
  * recursion. 
  */
 double calculate(char* text) {
-    printf("Begin Calculate\n");
+    printf("Begin Calculate in Calculator parse 2\n");
 
     int i = 0;
     int len = strlen(text);
     
     // parse
-    return load_as(text, len);
+    return load(text, len);
 }
 
 /**
  * Searches for the highest order thing then 
  */
 double load(char* text, int len) {
+    int i = 0;
+    load_level++;
+    
+    // Operation Max
+    int op = -1;
+    int op_i = 0;
+    int op_level = INT_MAX;
+    int level = 0;
+
+    
+    // loop 
+    while (text[i] != '\0' && i < len) {
+        // Level management
+        if (text[i] == '(') {
+            level++;
+        } else if (text[i] == ')') {
+            level--;
+        }
+
+
+        // Addition 
+        if (
+            text[i] == '+' &&
+            level < op_level &&
+            (op == -1 || op == '/' || op == '*' || op == '(')
+        ) {
+            op = '+';
+            op_i = i;
+            op_level = level;
+        } 
+        
+        // Subtraction
+        if (
+            text[i] == '-' &&
+            level < op_level &&
+            (op == -1 || op == '/' || op == '*' || op == '(')
+        ) {
+            op = '-';
+            op_i = i;
+            op_level = level;
+        }
+        
+        // Multiplication
+        if (
+            text[i] == '*' &&
+            level < op_level &&
+            (op == -1 || op == '(')
+        ) {
+            op = '*';
+            op_i = i;
+            op_level = level;
+        } 
+        
+        
+        // Division
+        if (
+            text[i] == '/' &&
+            level < op_level &&
+            (op == -1 || op == '(')
+        ) {
+            op = '/';
+            op_i = i;
+            op_level = level;
+        } 
+        
+        // Brackets
+        if (
+            text[i] == '(' &&
+            level < op_level &&
+            op == -1
+        ) {
+            op = '(';
+            op_i = i;
+            op_level = level;
+        }
+        
+        // Iterate 
+        i++;
+    }
+    printf("Calculate: \"%.*s\" with op %c\n", len, text, op != -1 ? op : 'N');
+    
+    // Addition
+    if (op == '+') {
+        return op_addition(text, op_i, text + op_i + 1, len - (op_i + 1));
+    }
+    
+    // Subtraction
+    if (op == '-') {
+        return op_subtraction(text, op_i, text + op_i + 1, len - (op_i + 1));
+    }
+    
+    // Multiplication
+    if (op == '*') {
+        return op_multiplication(text, op_i, text + op_i + 1, len - (op_i + 1));
+    }
+    
+    // Division
+    if (op == '/') {
+        return op_division(text, op_i, text + op_i + 1, len - (op_i + 1));
+    }
+    
+    // Brackets
+    if (op == '(') {
+        return op_brackets(text + op_i, len - op_i);
+    }
+
+    // Number
+    return op_number(text, len);
 
 }
 
@@ -47,207 +168,54 @@ double load_number(char* text, int len) {
     return num;
 }
 
-/**
- * Sweep for the division multiplication
- */
-double load_dm(char* text, int len) {
-    // index
-    int i = 0;
-    int start_i = 0;
-    int end_i = len;
-    
-    // num
-    double hold_num = 0;
-    double out_num = 1;
-    
-    // operation
-    int last_op = 0;
-    int no_op = 0;
-    
-    // loop
-    while (text[i] != '\0' && i < len) {
-        if (text[i] == '*' || text[i] == '/') {
-            // Recurse
-            end_i = i;
-            hold_num = load_number(text + start_i, end_i - start_i);
-            
-            // Operation
-            if (no_op != 0) {
-                if (last_op == '*') {
-                    out_num *= hold_num;
-                } else if (last_op == '/') {
-                    out_num /= hold_num;
-                }
-            } else {
-                out_num = hold_num;
-            }
-            
-            // Iterate
-            last_op = text[i];
-            no_op++;
-            start_i = i + 1;
-            end_i = len;
-        } 
-        i++;
-    }
-    
-    // Final Load
-    hold_num = load_number(text + start_i, end_i - start_i);
-    
-    
-    // Operation
-    if (no_op != 0) {
-        if (last_op == '*') {
-            out_num *= hold_num;
-        } else if (last_op == '/') {
-            out_num /= hold_num;
-        }
-    } else {
-        out_num = hold_num;
-    }
-    
-    return out_num;
+double op_division(char* text_1, int len_1, char* text_2, int len_2) {
+    return load(text_1, len_1) / load(text_2, len_2); 
 }
 
-double load_as(char* text, int len) {
-    // index
-    int i = 0;
-    int start_i = 0;
-    int end_i = len;
-    
-    // num
-    double hold_num = 0;
-    double out_num = 1;
-    
-    // operation
-    int last_op = 0;
-    int no_op = 0;
-    int last_char_num = 0==1;
-    
-    // loop
-    while (text[i] != '\0' && i < len) {
-        if (text[i] == '+' || text[i] == '-') {
-            // Recurse
-            end_i = i;
-            hold_num = load_dm(text + start_i, end_i - start_i);
-            
-            // Operation
-            if (no_op != 0) {
-                if (last_op == '+') {
-                    out_num += hold_num;
-                } else if (last_op == '-') {
-                    out_num -= hold_num;
-                }
-            } else {
-                out_num = hold_num;
-            }
-            
-            // Iterate
-            last_op = text[i];
-            no_op++;
-            start_i = i + 1;
-            end_i = len;
-        } 
-        if ('0' <= text[i] && text[i] <= '9') {
-            last_char_num = (1==1);
-        } else {
-            last_char_num = (0==1);
-        }
-        i++;
-    }
-    
-    // Final Load
-    hold_num = load_dm(text + start_i, end_i - start_i);
-    
-    // Operation
-    if (no_op != 0) {
-        if (last_op == '+') {
-            out_num += hold_num;
-        } else if (last_op == '-') {
-            out_num -= hold_num;
-        }
-    } else {
-        out_num = hold_num;
-    }
-    
-    return out_num;
+double op_multiplication(char* text_1, int len_1, char* text_2, int len_2) {
+    return load(text_1, len_1) * load(text_2, len_2); 
 }
 
-/**
- * Does the bracket of bidmas, needs to check for different levels of brackets
- * unsolved problem. 
- */
-double load_b(char* text, int len) {
-    // index
-    int i = 0;
+double op_addition(char* text_1, int len_1, char* text_2, int len_2) {
+    return load(text_1, len_1) + load(text_2, len_2); 
+}
+
+double op_subtraction(char* text_1, int len_1, char* text_2, int len_2) {
+    return load(text_1, len_1) - load(text_2, len_2); 
+}
+
+double op_brackets(char* text, int len) {
     int start_i = 0;
     int end_i = len;
-    
-    // num
-    double hold_num = 0;
-    double out_num = 1;
-    
-    // operation
-    int last_op = 0;
-    int no_op = 0;
-    int last_char_num = 0==1;
     int level = 0;
+    
+    for (int i = 0; i < len; i++) {
+        if (text[i] == '(') {
+            if (level == 0) {
+                start_i = i;
+            }
+            level++;
+        } else if (text[i] == ')') {
+            if (level == 1) {
+                end_i = i;
+            }
+            level--;
+        }
+    }
+    
+    return load(text + start_i + 1, end_i - start_i - 1);
+}
 
-    // loop
-    while (text[i] != '\0' && i < len) {
-        if (text[i] == '(' || text[i] == ')') {
-            
-            // Highest level only
-            if (text[i] == '(') {
-                level++;
-            } else if (text[i] == ')') {
-                level--;
-            }
-            
-            // Recurse
-            end_i = i;
-            hold_num = load_dm(text + start_i, end_i - start_i);
-            
-            // Operation
-            if (no_op != 0) {
-                if (last_op == '+') {
-                    out_num += hold_num;
-                } else if (last_op == '-') {
-                    out_num -= hold_num;
-                }
-            } else {
-                out_num = hold_num;
-            }
-            
-            // Iterate
-            last_op = text[i];
-            no_op++;
-            start_i = i + 1;
-            end_i = len;
-        } 
-        if ('0' <= text[i] && text[i] <= '9') {
-            last_char_num = (1==1);
-        } else {
-            last_char_num = (0==1);
+double op_number(char* text, int len) {
+    int num = 0;
+
+    for (int i = 0; i < len; i++) {
+        if ('0' <= text[i] || text[i] <= '9') {
+            num = num * 10 + text[i] - '0';
         }
-        i++;
     }
     
-    // Final Load
-    hold_num = load_dm(text + start_i, end_i - start_i);
-    
-    // Operation
-    if (no_op != 0) {
-        if (last_op == '+') {
-            out_num += hold_num;
-        } else if (last_op == '-') {
-            out_num -= hold_num;
-        }
-    } else {
-        out_num = hold_num;
-    }
-    
-    return out_num;
+    return num;
 }
 
 #pragma region Calculator State 

@@ -6,6 +6,10 @@
 
 #define MAX_LOOP 100
 
+double load_number(char* text, int len);
+double load_dm(char* text, int len);
+double load_as(char* text, int len);
+
 /**
  * Calculate is following bidmas but it needs and is folliowing parsing via 
  * recursion. 

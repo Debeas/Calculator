@@ -23,8 +23,9 @@
 #define BUTTON_SLASH        0x2012
 #define BUTTON_ASTERIX      0x2013
 #define BUTTON_CALCULATE    0x2014
-#define BUTTON_OPEN_BRACKET    0x2016
-#define BUTTON_CLOSE_BRACKET    0x2017
+#define BUTTON_OPEN_BRACKET 0x2016
+#define BUTTON_CLOSE_BRACKET 0x2017
+#define BUTTON_RESET        0x2018
 
 #define STATIC_CALCULATOR   0x2015
 
@@ -110,9 +111,10 @@ int WINAPI WinMain(
     CreateButton(hInstance, hwnd, x+3*1.25*x_width, y + 1.25*y_height,  x_width, y_height, "-",             BUTTON_MINUS);
     CreateButton(hInstance, hwnd, x+3*1.25*x_width, y +2*1.25*y_height, x_width, y_height, "*",             BUTTON_ASTERIX);
     CreateButton(hInstance, hwnd, x+3*1.25*x_width, y +3*1.25*y_height, x_width, y_height, "/",             BUTTON_SLASH);
-    CreateButton(hInstance, hwnd, x+4*1.25*x_width, y , x_width, y_height, "(",             BUTTON_OPEN_BRACKET);
+    CreateButton(hInstance, hwnd, x+4*1.25*x_width, y , x_width, y_height, "(",                             BUTTON_OPEN_BRACKET);
     CreateButton(hInstance, hwnd, x+4*1.25*x_width, y +1*1.25*y_height, x_width, y_height, ")",             BUTTON_CLOSE_BRACKET);
     CreateButton(hInstance, hwnd, x, y +4*1.25*y_height, 4.75*x_width, y_height,           "CALCULATE",     BUTTON_CALCULATE);
+    CreateButton(hInstance, hwnd, x, y +5*1.25*y_height, 4.75*x_width, y_height,           "RESET",         BUTTON_RESET);
 
     int edit_x = 30;
     int edit_y = 10;
@@ -212,6 +214,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     break;
                 case BUTTON_CLOSE_BRACKET:
                     calculator_button_character(main_cs, ')');
+                    InvalidateRect(hwnd, NULL, TRUE);
+                    break;
+                case BUTTON_RESET:
+                    main_cs->i = 0;
+                    main_cs->str[0] = '\0';
                     InvalidateRect(hwnd, NULL, TRUE);
                     break;
                 case BUTTON_CALCULATE:
